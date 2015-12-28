@@ -1,0 +1,55 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.5.0'
+        classpath "com.monochromeroad.gradle-plugins:gradle-aws-s3-sync:0.10"
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        maven {
+            url "s3://gozoomo-jenkins-build/releases"
+            credentials(AwsCredentials) {
+                accessKey AWS_ACCESS_KEY
+                secretKey AWS_SECRET_KEY
+            }
+        }
+
+        maven {
+            url "s3://gozoomo-jenkins-build/snapshots"
+            credentials(AwsCredentials) {
+                accessKey AWS_ACCESS_KEY
+                secretKey AWS_SECRET_KEY
+            }
+        }
+
+        mavenLocal()
+        jcenter()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+import com.monochromeroad.gradle.plugin.aws.s3.S3Sync
+
+task deploy(type: S3Sync){
+    description = "Deploys aar file on a s3 bucket."
+
+    accessKey AWS_ACCESS_KEY
+    secretKey AWS_SECRET_KEY
+
+    //configFile "jets3t.properties"
+
+    from "mylibrary/build/snapshots/"
+    into "gozoomo-jenkins-build/snapshots"
+}
